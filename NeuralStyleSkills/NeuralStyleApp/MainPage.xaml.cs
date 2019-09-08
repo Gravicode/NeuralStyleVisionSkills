@@ -82,9 +82,6 @@ namespace NeuralStyleApp
         public static long _RenderFPS = 0;
         private int _LastFPSTick = 0;
 
-        //---batas---
-
-
         // Skill-related variables
         private NeuralStyleTransformerDescriptor m_skillDescriptor = null;
         private NeuralStyleTransformerSkill m_skill = null;
@@ -160,7 +157,7 @@ namespace NeuralStyleApp
             {
                 await new MessageDialog(ex.Message).ShowAsync();
             }
-            //old--
+            
             _resultframeRenderer = new FrameRenderer(UIResultImage);
             _inputFrameRenderer = new FrameRenderer(UIInputImage);
             UIStyleList.ItemsSource = _kModelFileNames;
@@ -807,7 +804,7 @@ namespace NeuralStyleApp
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private async void _modelInputFrameReader_FrameArrived(MediaFrameReader sender, MediaFrameArrivedEventArgs args)
+        private void _modelInputFrameReader_FrameArrived(MediaFrameReader sender, MediaFrameArrivedEventArgs args)
         {
             Debug.WriteLine("_modelInputFrameReader_FrameArrived");
             MediaFrameReference frame = null;

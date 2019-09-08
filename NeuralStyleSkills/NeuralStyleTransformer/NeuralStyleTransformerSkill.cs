@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿
 
 using System;
 using System.Collections.Generic;
@@ -18,9 +18,8 @@ namespace NeuralStyleTransformer
 {
     /// <summary>
     /// NeuralStyleTransformerSkill class.
-    /// Contains the main execution logic of the skill, findind a face in an image then running an ML model to infer its sentiment
+    /// Contains the main execution logic of the skill, get input image then running an ML model to transfer style
     /// Also acts as a factory for NeuralStyleTransformerBinding
-    /// to obtain the ONNX model used in this skill, refer to https://github.com/onnx/models/tree/master/emotion_ferplus
     /// </summary>
     public sealed class NeuralStyleTransformerSkill : ISkill
     {
@@ -102,11 +101,7 @@ namespace NeuralStyleTransformer
         }
 
         /// <summary>
-        /// Runs the skill against a binding object, executing the skill logic on the associated input features and populating the output ones
-        /// This skill proceeds in 2 steps: 
-        /// 1) Run FaceDetector against the image and populate the face bound feature in the binding object
-        /// 2) If a face was detected, proceeds with sentiment analysis of that portion fo the image using Windows ML then updating the score 
-        /// of each possible sentiment returned as result
+        /// Evaluate input image, process (inference) then bind to output
         /// </summary>
         /// <param name="binding"></param>
         /// <returns></returns>
@@ -134,10 +129,10 @@ namespace NeuralStyleTransformer
                     softwareBitmapInput = await SoftwareBitmap.CreateCopyFromSurfaceAsync(inputFrame.Direct3DSurface);
                 }
 
-                // Retrieve face rectangle feature from the binding object
+                // Retrieve output image from model
                 var transformedImage = binding[NeuralStyleTransformerConst.SKILL_OUTPUTNAME_IMAGE];
 
-                // Bind the WinML input frame with the adequate face bounds specified as metadata
+                // Bind the WinML input frame 
                 bindingObj.m_winmlBinding.Bind(
                     NeuralStyleTransformerConst.WINML_MODEL_INPUTNAME, // WinML feature name
                     inputFrame);
@@ -151,15 +146,7 @@ namespace NeuralStyleTransformer
                 {
                     Debug.WriteLine($"{output.Key} : {output.Value} -> {output.Value.GetType()}");
                 }
-                //var winMLModelResult = (winMLEvaluationResult.Outputs[NeuralStyleTransformerConst.WINML_MODEL_OUTPUTNAME] as TensorFloat).GetAsVectorView();
-                //var predictionScores = SoftMax(winMLModelResult);
-                /*
-                var result = new VideoFrame(BitmapPixelFormat.Bgra8,
-                                                NeuralStyleTransformerConst.IMAGE_WIDTH,
-                                                NeuralStyleTransformerConst.IMAGE_HEIGHT,
-                                                BitmapAlphaMode.Premultiplied);
-
-                await _outputFrame.CopyToAsync(result);*/
+                //set model output to skill output
                 await transformedImage.SetFeatureValueAsync(_outputFrame);
 
             });
@@ -175,28 +162,6 @@ namespace NeuralStyleTransformer
         /// </summary>
         public ISkillExecutionDevice Device { get; private set; }
 
-        /// <summary>
-        /// Calculates SoftMax normalization over a set of data
-        /// </summary>
-        /// <param name="inputs"></param>
-        /// <returns></returns>
-        private List<float> SoftMax(IReadOnlyList<float> inputs)
-        {
-            List<float> inputsExp = new List<float>();
-            float inputsExpSum = 0;
-            for (int i = 0; i < inputs.Count; i++)
-            {
-                var input = inputs[i];
-                inputsExp.Add((float)Math.Exp(input));
-                inputsExpSum += inputsExp[i];
-            }
-            inputsExpSum = inputsExpSum == 0 ? 1 : inputsExpSum;
-            for (int i = 0; i < inputs.Count; i++)
-            {
-                inputsExp[i] /= inputsExpSum;
-            }
-            return inputsExp;
-        }
 
         /// <summary>
         /// If possible, retrieves a WinML LearningModelDevice that corresponds to an ISkillExecutionDevice

@@ -14,7 +14,7 @@
             <Setter Property="Foreground" Value="Black"/>
         </Style>
     </Page.Resources>
-    <ScrollViewer>
+    <ScrollViewer Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel>
 
             <controls:Expander VerticalAlignment="Top"
@@ -45,7 +45,7 @@
             </controls:Expander>
 
            
-            <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+            <Grid >
 
                 <Grid>
                     <Grid.RowDefinitions>
